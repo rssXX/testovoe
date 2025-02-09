@@ -1,5 +1,12 @@
 version: "3.8"
 
+networks:
+  cv_network:
+    driver: bridge
+
+volumes:
+  backend_node_modules:
+
 services:
   backend:
     build:
@@ -9,6 +16,5 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./backend:/app
-      - /app/node_modules
-      - /app/.bun
+      - ./backend/:/backend
+      - backend_node_modules:/backend/node_modules
