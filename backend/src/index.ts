@@ -1,7 +1,7 @@
 import createServer from "./app/server";
 
 const port = parseInt(process.env.SERVER_PORT!) || 3000
-const host = process.env.SERVER_HOST || 'localhost';
+const host = process.env.SERVER_HOST || '0.0.0.0';
 
 const app = createServer()
 
