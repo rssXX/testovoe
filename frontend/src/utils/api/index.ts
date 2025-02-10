@@ -1,7 +1,11 @@
 import {
-    shortenUrl
+    postShortenUrl,
+    deleteShortenUrl,
+    getInfoShortenUrl,
 } from './api.ts'
 
 export {
-    shortenUrl,
+    postShortenUrl,
+    deleteShortenUrl,
+    getInfoShortenUrl,
 }

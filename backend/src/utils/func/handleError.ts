@@ -3,7 +3,7 @@ import { Context } from "hono";
 import { Prisma } from "@prisma/client";
 
 const handleError = (error: unknown, c: Context) => {
-    // console.log(error)
+    console.log(error)
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
         switch (error.code) {
             case "P2002":
@@ -11,7 +11,7 @@ const handleError = (error: unknown, c: Context) => {
             case "P2003":
                 return c.json({ error: "Есть связанные данные" }, 400);
             case "P2025":
-                return c.status(404);
+                return c.json({ error: "Такие данных не существует" }, 404)
             default:
                 return c.json({ error: "Ошибка базы данных" }, 500);
         }

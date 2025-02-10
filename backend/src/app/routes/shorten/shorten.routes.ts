@@ -76,8 +76,10 @@ shorten
         async (c) => {
             try {
                 const url = c.req.param('url')
-
+                console.log(url)
                 const shortenUrl = await shortenService.deleteShortUrl(url)
+
+                if (!shortenUrl) return c.json({error: `Ссылка ${url} не найдена`}, 404)
 
                 return c.json({message: `Ссылка ${shortenUrl.from} удалена`}, 200)
             }catch (error) {
