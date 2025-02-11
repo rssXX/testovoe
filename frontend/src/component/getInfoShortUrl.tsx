@@ -1,24 +1,35 @@
 import React from 'react';
-import {Button, Card, Form, FormProps, Input} from "antd";
+import {
+    Button, Card, Form,
+    FormProps, Input, message
+} from "antd";
 import {getInfoShortenUrl} from "../utils/api";
 
 interface FieldType {
-    alies: string
+    alias: string
 }
 
 const GetInfoShortUrl: React.FC = () => {
     const [isPending, setIsPending] = React.useState<boolean>(false)
     const [data, setData] = React.useState({})
 
-    const onFinish: FormProps<FieldType>['onFinish'] = ({alies}) => {
+    const onFinish: FormProps<FieldType>['onFinish'] = ({alias}) => {
         setIsPending(true)
-        getInfoShortenUrl(alies)
-            .then((data) => {
-                setData(data)
+        getInfoShortenUrl(alias)
+            .then((res) => {
+                if ("error" in res) {
+                    message.error(res.error);
+                    setData({});
+                } else {
+                    setData(res);
+                    message.success(`Информация по alias "${alias}" получена успешно!`);
+                }
             })
-            .finally(() => {
-                setIsPending(false)
+            .catch((error) => {
+                console.error(error);
+                message.error("Произошла ошибка при получении информации");
             })
+            .finally(() => setIsPending(false));
     };
 
     return (
@@ -30,7 +41,7 @@ const GetInfoShortUrl: React.FC = () => {
             >
                 <Form.Item<FieldType>
                     label="Короткая ссылка"
-                    name="alies"
+                    name="alias"
                     rules={[
                         {required: true, message: 'Введите URL'},
                     ]}
@@ -38,8 +49,8 @@ const GetInfoShortUrl: React.FC = () => {
                     <Input />
                 </Form.Item>
                 <Form.Item>
-                    <Button danger type="primary" htmlType="submit" disabled={isPending}>
-                        Создать
+                    <Button type="primary" htmlType="submit" disabled={isPending}>
+                        Проверить
                     </Button>
                 </Form.Item>
             </Form>

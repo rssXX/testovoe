@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, {AxiosError} from "axios";
 import {ShortenInterface, ShortenResponse} from '../interface'
 
 const api = axios.create({
@@ -8,7 +8,10 @@ const api = axios.create({
   },
 });
 
-export const postShortenUrl = async (originalUrl: string, alias?: string, expiresAt?: number): Promise<ShortenResponse | {error: string}> => {
+type ApiError = AxiosError<{ error: string }>;
+type ApiResult<T> = T | { error: string };
+
+export const postShortenUrl = async (originalUrl: string, alias?: string, expiresAt?: number): Promise<ApiResult<ShortenResponse>> => {
   try {
     const {data}: {data: ShortenResponse} = await api.post("/shorten", {
       originalUrl,
@@ -17,26 +20,28 @@ export const postShortenUrl = async (originalUrl: string, alias?: string, expire
     });
 
     return data;
-  } catch (error) {
+  } catch (err: unknown) {
+    const error = err as ApiError;
     console.error("Ошибка при создании короткой ссылки:", error);
-    return error.response.data;
+    return error.response?.data || { error: "Неизвестная ошибка" };
   }
 };
 
-export const deleteShortenUrl = async (alias: string): Promise<ShortenResponse | {error: string}> => {
+export const deleteShortenUrl = async (alias: string): Promise<ApiResult<ShortenResponse>> => {
   try {
     const {data}: {data: ShortenResponse} = await api.delete(`/delete/${alias}`);
 
     return data;
-  } catch (error) {
+  } catch (err: unknown) {
+    const error = err as ApiError;
     console.error("Ошибка при удалении ссылки:", error);
-    return error.response.data;
+    return error.response?.data || { error: "Неизвестная ошибка" };
   }
 };
 
-export const getInfoShortenUrl = async (alias: string): Promise<ShortenInterface | {error: string}> => {
+export const getInfoShortenUrl = async (alias: string): Promise<ApiResult<ShortenInterface>> => {
   try {
-    const {data}: {data: Omit<ShortenInterface, 'alies'>} = await api.get(`/info/${alias}`);
+    const {data}: {data: Omit<ShortenInterface, 'alias'>} = await api.get(`/info/${alias}`);
 
     return {
       originalUrl: data.originalUrl,
@@ -44,8 +49,9 @@ export const getInfoShortenUrl = async (alias: string): Promise<ShortenInterface
       clickCount: data.clickCount,
       alias: alias
     };
-  } catch (error) {
+  } catch (err: unknown) {
+    const error = err as ApiError;
     console.error("Ошибка при удалении ссылки:", error);
-    return error.response.data;
+    return error.response?.data || { error: "Неизвестная ошибка" };
   }
 };

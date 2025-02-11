@@ -1,23 +1,32 @@
 import React from 'react';
-import {Button, Card, Form, FormProps, Input} from "antd";
-import {deleteShortenUrl} from "../utils/api/api.ts";
+import {
+    Button, Card, Form,
+    FormProps, Input, message
+} from "antd";
+import {deleteShortenUrl} from "../utils/api";
 
 interface FieldType {
-    alies: string
+    alias: string
 }
 
 const DeleteShortUrl: React.FC = () => {
     const [isPending, setIsPending] = React.useState<boolean>(false)
 
-    const onFinish: FormProps<FieldType>['onFinish'] = ({alies}) => {
+    const onFinish: FormProps<FieldType>['onFinish'] = ({alias}) => {
         setIsPending(true)
-        deleteShortenUrl(alies)
+        deleteShortenUrl(alias)
             .then((data) => {
-                return data
+                if ("error" in data) {
+                    message.error(data.error);
+                } else {
+                    message.success(`Ссылка с alias "${alias}" успешно удалена`);
+                }
             })
-            .finally(() => {
-                setIsPending(false)
+            .catch((error) => {
+                console.error(error);
+                message.error("Произошла ошибка при удалении ссылки");
             })
+            .finally(() => setIsPending(false));
     };
 
     return (
@@ -29,7 +38,7 @@ const DeleteShortUrl: React.FC = () => {
             >
                 <Form.Item<FieldType>
                     label="Короткая ссылка"
-                    name="alies"
+                    name="alias"
                     rules={[
                         {required: true, message: 'Введите URL'},
                     ]}
@@ -38,7 +47,7 @@ const DeleteShortUrl: React.FC = () => {
                 </Form.Item>
                 <Form.Item>
                     <Button danger type="primary" htmlType="submit" disabled={isPending}>
-                        Создать
+                        Удалить
                     </Button>
                 </Form.Item>
             </Form>

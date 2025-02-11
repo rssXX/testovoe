@@ -2,31 +2,45 @@ import React from 'react';
 import {
     Card, Button, Col,
     Form, FormProps,
-    Input, Row, DatePicker
+    Input, Row, DatePicker,
+    message
 } from 'antd';
 import '@ant-design/v5-patch-for-react-19';
 import { Dayjs } from 'dayjs';
-import {shortenInterface} from "../utils/interface";
-import {postShortenUrl} from "../utils/api/api.ts";
+import {ShortenInterface} from "../utils/interface";
+import {postShortenUrl} from "../utils/api";
 
 
-interface FieldType extends Omit<shortenInterface, 'clickCount' | 'createdAt'>{
+interface FieldType extends Omit<ShortenInterface, 'clickCount' | 'createdAt' | 'alias'>{
     expiresAt?: Dayjs
-    alies?: string
+    alias?: string
 }
 
 const CreateShortUrl: React.FC = () => {
     const [isPending, setIsPending] = React.useState<boolean>(false)
 
-    const onFinish: FormProps<FieldType>['onFinish'] = (values) => {
-        setIsPending(true)
-        postShortenUrl(values.originalUrl, values.alies, values.expiresAt?.unix())
+    const onFinish: FormProps<FieldType>["onFinish"] = (values) => {
+        setIsPending(true);
+        postShortenUrl(
+            values.originalUrl,
+            values.alias,
+            values.expiresAt?.unix()
+        )
             .then((data) => {
-                console.log(data)
+                if ("error" in data) {
+                    message.error(data.error);
+                } else {
+                    // Покажем пользователю, что ссылка создана
+                    message.success(
+                        `Ссылка успешно создана! Короткая ссылка: ${data.from}`
+                    );
+                }
             })
-            .finally(() => {
-                setIsPending(false)
+            .catch((error) => {
+                console.error(error);
+                message.error("Произошла ошибка при создании короткой ссылки");
             })
+            .finally(() => setIsPending(false));
     };
 
     return (
@@ -52,7 +66,7 @@ const CreateShortUrl: React.FC = () => {
                     <Col flex={1}>
                         <Form.Item<FieldType>
                             label="Откуда"
-                            name="alies"
+                            name="alias"
                             rules={[
                                 {max: 20, message: "Максимум 20 символов"}
                             ]}
